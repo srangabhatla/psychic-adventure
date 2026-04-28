@@ -1,0 +1,20 @@
+{
+  "name": "janardhan-labs",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Janardhan Labs — AI utility app portfolio. BYOK, no server, no auth.",
+  "type": "module",
+  "scripts": {
+    "dev":   "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react":     "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.1.4"
+  }
+}
