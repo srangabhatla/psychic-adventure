@@ -1,3 +1,4 @@
+import { useApiKey } from "../../shared/components/KeyGate";
 import { callGemini } from "../../shared/lib/gemini-client";
 import { useState, useEffect, useRef, useCallback } from "react";
 
