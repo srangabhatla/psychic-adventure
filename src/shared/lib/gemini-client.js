@@ -6,7 +6,7 @@
  *   - All calls use gemini-2.0-flash-lite (higher free-tier RPM/TPM)
  *   - callGeminiWithQuality() bundles quality check + generate into ONE call
  *   - Shared key via localStorage "jl-gemini-key"
- *   - Supports all legacy call signatures
+ *   - Supports all legacy call signaturesF
  */
 
 const LS_KEY     = "jl-gemini-key";
@@ -40,7 +40,32 @@ function normalise(v) {
       return { role, parts: [{ text: String(msg.content || "") }] };
     });
   }
-  return [{ role: "user", parts: [{ text: String(v) }] }];
+  return [{ role: "user", parts: [{ text: preprocessInput(String(v)) }] }];
+}
+
+function preprocessInput(text) {
+  if (typeof text !== "string" || text.length < 100) return text;
+  
+  // Normalize whitespace
+  let clean = text.replace(/\s+/g, " ").trim();
+  
+  // Remove repeated sentences
+  const sentences = clean.split(/[.!?]+/).map(s => s.trim()).filter(Boolean);
+  const seen = new Set();
+  const unique = sentences.filter(s => {
+    const key = s.toLowerCase().slice(0, 40);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  clean = unique.join(". ");
+  
+  // Cap at ~3200 chars (safe token budget)
+  if (clean.length > 3200) {
+    clean = clean.slice(0, 3200) + "...";
+  }
+  
+  return clean;
 }
 
 async function _fetch(contents, maxTokens, mimeType, attempt) {
