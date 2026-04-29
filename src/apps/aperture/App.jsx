@@ -1,7 +1,6 @@
 import { callGemini } from "../../shared/lib/gemini-client";
 import { saveResult, loadResults } from "../../shared/lib/storage";
 import { useApiKey } from "../../shared/components/KeyGate";
-import { saveResult } from "../../shared/lib/storage";
 import { useState } from "react";
 
 // ── API helper — anthropic-version + 55s timeout ──
