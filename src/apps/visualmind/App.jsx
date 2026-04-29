@@ -385,9 +385,7 @@ function VisualMindApp() {
   const [domain,setDomain]     = useState("auto");
   const [format,setFormat]     = useState("concept");
   const [suggested,setSuggested]= useState(null);
-  const [aiRec,setAiRec]       = useState(null);
   const [loading,setLoading]   = useState(false);
-  const [reccing,setReccing]   = useState(false);
   const [result,setResult]     = useState(null);
   const [error,setError]       = useState(null);
   const [annotation,setAnnotation] = useState("");
@@ -409,15 +407,17 @@ function VisualMindApp() {
     } else if(domain==="auto"){ setSuggested(null); }
   },[domain]);
 
-  async function recommend(){
-    if(!notes.trim()||domain!=="auto") return;
-    setReccing(true);
-    try {
-      const raw=await claude(PROMPTS.recommend, notes);
-      const p=parseJSON(raw);
-      if(p){ setSuggested(p.format); setFormat(p.format); setAiRec(p); }
-    } catch{}
-    setReccing(false);
+  function recommend(text){
+    const t=(text||notes).toLowerCase();
+    if(!t.trim()||domain!=="auto") return;
+    let fmt="concept";
+    if(/\bvs\b|compare|difference|versus|contrast/.test(t)) fmt="comparison";
+    else if(/steps?|process|sequence|first.*then|stages?|procedure|phases?/.test(t)) fmt="timeline";
+    else if(/types?|categor|classif|kinds?|groups?|hierarch/.test(t)) fmt="hierarchy";
+    else if(/define|definition|term|meaning|vocabulary|glossary/.test(t)) fmt="flashcards";
+    else if(/both|overlap|similar|common|shared/.test(t)) fmt="venn";
+    else if(/key points?|summary|main|important|bullet/.test(t)) fmt="keypoints";
+    setSuggested(fmt); setFormat(fmt);
   }
 
   function handleFile(e){
@@ -502,7 +502,7 @@ function VisualMindApp() {
                 <div className="stitle">Paste your notes</div>
                 <div className="sdesc">Lecture notes, textbook excerpts, research summaries.</div>
                 <div style={{marginTop:9}}>
-                  <textarea placeholder="e.g. The mitochondria is the powerhouse of the cell…" value={notes} onChange={e=>setNotes(e.target.value)} onBlur={recommend}/>
+                  <textarea placeholder="e.g. The mitochondria is the powerhouse of the cell…" value={notes} onChange={e=>{setNotes(e.target.value);recommend(e.target.value);}}/>
                   <div className="cc">{notes.length} chars</div>
                 </div>
               </div>
@@ -532,14 +532,7 @@ function VisualMindApp() {
               </select>
             </div>
 
-            {reccing && <div className="aibox"><div className="aibox-icon">⟳</div><div className="aibox-text"><strong>Analysing…</strong>Picking best format for your notes.</div></div>}
-            {aiRec && domain==="auto" && <div className="aibox">
-              <div className="aibox-icon">✦</div>
-              <div className="aibox-text">
-                <strong>AI Recommendation</strong>
-                <b>{FORMATS.find(f=>f.id===aiRec.format)?.label}</b> for {aiRec.domain} content. {aiRec.reason}
-              </div>
-            </div>}
+            {suggested && domain==="auto" && <div className="aibox"><div className="aibox-icon">✦</div><div className="aibox-text"><strong>Format detected</strong>{FORMATS.find(f=>f.id===suggested)?.label} — best match for your notes.</div></div>}
 
             <div>
               <div className="plbl">03 — Visual Format</div>
