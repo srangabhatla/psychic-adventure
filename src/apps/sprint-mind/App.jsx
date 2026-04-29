@@ -641,18 +641,8 @@ Rules:
                     <button className={`action-btn ${copiedKey === "all" ? "copied" : ""}`} onClick={() => copy(buildMarkdown(result, ideaTrim, productType, persona), "all")}>
                       {copiedKey === "all" ? "Copied ✓" : "Copy all"}
                     </button>
-                    <button className="reset-btn"               <button
-                id="notion-copy-btn"
-                onClick={() => {
-                  const md = buildMarkdown(result, ideaTrim, productType, persona);
-                  navigator.clipboard.writeText(md).then(() => {
-                    const el = document.getElementById("notion-copy-btn");
-                    if(el){ el.textContent = "Copied ✓"; setTimeout(()=>{ el.textContent = "Copy for Notion"; }, 2000); }
-                  });
-                }}
-                style={{fontFamily:"var(--font-mono)",fontSize:"0.6rem",letterSpacing:"0.1em",textTransform:"uppercase",padding:"0.4rem 0.85rem",background:"none",border:"1px solid var(--blue)",borderRadius:"4px",color:"var(--blue)",cursor:"pointer",marginRight:"0.5rem"}}
-              >Copy for Notion</button>
-              <button onClick={() => { setResult(null); setError(""); }}>← Edit</button>
+                    <button id="notion-copy-btn" onClick={() => { const md = buildMarkdown(result, ideaTrim, productType, persona); navigator.clipboard.writeText(md).then(() => { const el = document.getElementById("notion-copy-btn"); if(el){ el.textContent = "Copied ✓"; setTimeout(()=>{ el.textContent = "Copy for Notion"; }, 2000); } }); }} style={{fontFamily:"var(--font-mono)",fontSize:"0.6rem",letterSpacing:"0.1em",textTransform:"uppercase",padding:"0.4rem 0.85rem",background:"none",border:"1px solid var(--blue)",borderRadius:"4px",color:"var(--blue)",cursor:"pointer",marginRight:"0.5rem"}}>Copy for Notion</button>
+                    <button className="reset-btn" onClick={() => { setResult(null); setError(""); }}>← Edit</button>
                   </div>
                 </div>
 
