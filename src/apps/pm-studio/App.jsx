@@ -676,10 +676,10 @@ async function callGemini(prompt, key) {
 // ── COMPONENT ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [mode,      setMode]      = useState(MODES[0].id);
-  const [apiKey,    setApiKey]    = useState(()=>localStorage.getItem(LS_KEY)||"");
+  const [apiKey,    setApiKey]    = useState(()=>localStorage.getItem("jl-gemini-key")||localStorage.getItem(LS_KEY)||"");
   const [keyIn,     setKeyIn]     = useState(()=>localStorage.getItem(LS_KEY)||"");
   const [keyVis,    setKeyVis]    = useState(false);
-  const [keyOn,     setKeyOn]     = useState(()=>!!localStorage.getItem(LS_KEY));
+  const [keyOn,     setKeyOn]     = useState(()=>!!(localStorage.getItem("jl-gemini-key")||localStorage.getItem(LS_KEY)));
   const [keySt,     setKeySt]     = useState({msg:"",ok:true});
   const [keyWarn,   setKeyWarn]   = useState(false);
   const [fields,    setFields]    = useState({});
@@ -739,7 +739,7 @@ export default function App() {
       if(!(fields[f.id]||"").trim()) return `${f.label} is required.`;
     }
     if(TEST_MODE) return null;
-    const k=localStorage.getItem(LS_KEY)||keyIn.trim();
+    const k=localStorage.getItem("jl-gemini-key")||localStorage.getItem(LS_KEY)||keyIn.trim();
     if(!k)                    return "Save your Gemini API key first.";
     if(!k.startsWith("AIza")) return "Invalid API key format.";
     return null;

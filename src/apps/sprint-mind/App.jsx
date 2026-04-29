@@ -1,5 +1,7 @@
-import { useApiKey } from "../../shared/components/KeyGate";
 import { callGemini } from "../../shared/lib/gemini-client";
+import { saveResult, loadResults } from "../../shared/lib/storage";
+import { useQualityGate } from "../../shared/components/QualityGate";
+import { useApiKey } from "../../shared/components/KeyGate";
 import { useState } from "react";
 
 
@@ -359,6 +361,7 @@ function SprintMindApp() {
 
   const ideaTrim  = idea.trim();
   const canGen    = ideaTrim.length >= 20 && !loading;
+  const qg = useQualityGate("sprint-mind");
 
   const toggleSection = (s) => setPrdSections(prev => {
     const next = new Set(prev);
@@ -454,6 +457,7 @@ Rules:
         });
       }
       setResult(parsed);
+      saveResult("sprint-mind", parsed);
       // Auto-open all epics and features
       const eIds = new Set((parsed.jira?.epics || []).map(e => e.id));
       const fIds = new Set((parsed.jira?.epics || []).flatMap(e => (e.features||[]).map(f => f.id)));
@@ -580,7 +584,19 @@ Rules:
                     <div className={`char-hint ${ideaTrim.length === 0 ? "" : ideaTrim.length < 20 ? "warn" : "ok"}`}>
                       {ideaTrim.length > 0 && (ideaTrim.length < 20 ? `${20 - ideaTrim.length} more chars needed` : `${ideaTrim.split(/\s+/).length} words`)}
                     </div>
-                    <button className="generate-btn" onClick={generate} disabled={!canGen}>
+                    <button className="generate-btn" style={{marginRight:"0.5rem"}}
+              onClick={() => qg.analyse(ideaTrim)} disabled={qg.loading || !ideaTrim.trim() || !!qg.score}>
+              {qg.loading ? "Checking…" : qg.score ? "✓ Checked" : "Check input →"}
+            </button>
+            {qg.score && (
+              <div style={{padding:"0.5rem 0.75rem",marginBottom:"0.5rem",borderRadius:"4px",fontFamily:"var(--font-mono)",fontSize:"0.6rem",lineHeight:1.6,
+                background:qg.score==="green"?"rgba(37,99,235,0.06)":qg.score==="amber"?"rgba(37,99,235,0.04)":"rgba(239,68,68,0.06)",
+                border:`1px solid ${qg.score==="green"?"rgba(37,99,235,0.3)":qg.score==="amber"?"rgba(245,158,11,0.3)":"rgba(239,68,68,0.3)"}`,
+                color:qg.score==="green"?"var(--blue)":qg.score==="amber"?"#B45309":"#DC2626"}}>
+                {qg.score==="green"?"✓":qg.score==="amber"?"⚠":"✕"} {qg.message}
+              </div>
+            )}
+            <button className="generate-btn" onClick={generate} disabled={!canGen || qg.isBlocked}>
                       Generate PRD + JIRA →
                     </button>
                   </div>
@@ -625,7 +641,18 @@ Rules:
                     <button className={`action-btn ${copiedKey === "all" ? "copied" : ""}`} onClick={() => copy(buildMarkdown(result, ideaTrim, productType, persona), "all")}>
                       {copiedKey === "all" ? "Copied ✓" : "Copy all"}
                     </button>
-                    <button className="reset-btn" onClick={() => { setResult(null); setError(""); }}>← Edit</button>
+                    <button className="reset-btn"               <button
+                id="notion-copy-btn"
+                onClick={() => {
+                  const md = buildMarkdown(result, ideaTrim, productType, persona);
+                  navigator.clipboard.writeText(md).then(() => {
+                    const el = document.getElementById("notion-copy-btn");
+                    if(el){ el.textContent = "Copied ✓"; setTimeout(()=>{ el.textContent = "Copy for Notion"; }, 2000); }
+                  });
+                }}
+                style={{fontFamily:"var(--font-mono)",fontSize:"0.6rem",letterSpacing:"0.1em",textTransform:"uppercase",padding:"0.4rem 0.85rem",background:"none",border:"1px solid var(--blue)",borderRadius:"4px",color:"var(--blue)",cursor:"pointer",marginRight:"0.5rem"}}
+              >Copy for Notion</button>
+              <button onClick={() => { setResult(null); setError(""); }}>← Edit</button>
                   </div>
                 </div>
 

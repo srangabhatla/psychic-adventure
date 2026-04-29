@@ -1,5 +1,7 @@
-import { useApiKey } from "../../shared/components/KeyGate";
 import { callGemini } from "../../shared/lib/gemini-client";
+import { saveResult, loadResults } from "../../shared/lib/storage";
+import { useQualityGate } from "../../shared/components/QualityGate";
+import { useApiKey } from "../../shared/components/KeyGate";
 import { useState } from "react";
 
 
@@ -384,6 +386,7 @@ function SkinStackApp() {
 
   // ── App state ──
   const [loading, setLoading]   = useState(false);
+  const qg = useQualityGate("skinstack");
   const [result, setResult]     = useState(null);
   const [error, setError]       = useState("");
   const { copiedKey, copy }     = useCopy();
@@ -491,6 +494,7 @@ Rules:
       parsed._hasProducts = !!snapProducts;
       parsed._hasQ        = !!snapQ;
       setResult(parsed);
+      saveResult("skinstack", parsed);
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
   };
@@ -649,7 +653,7 @@ Rules:
                         {skinType && concerns.length === 0 && "Select at least one concern"}
                         {skinType && concerns.length > 0 && `${skinType} skin · ${concerns.length} concern${concerns.length !== 1 ? "s" : ""} · ${complexity}`}
                       </div>
-                      <button className="analyse-btn" onClick={analyse} disabled={!canAnalyse}>
+                      <button className="analyse-btn" onClick={analyse} disabled={!canAnalyse || qg.isBlocked}>
                         Build my stack →
                       </button>
                     </div>

@@ -630,7 +630,7 @@ export default function App() {
   const [keyInput,    setKeyInput]    = useState("");
   const [keyVisible,  setKeyVisible]  = useState(false);
   const [keyStatus,   setKeyStatus]   = useState({ msg: "", ok: true });
-  const [keyActive,   setKeyActive]   = useState(() => !!localStorage.getItem(LS_KEY));
+  const [keyActive,   setKeyActive]   = useState(() => !!(localStorage.getItem("jl-gemini-key") || localStorage.getItem(LS_KEY)));
   const [showKeyWarn, setShowKeyWarn] = useState(false);
 
   // Form state
@@ -693,7 +693,7 @@ export default function App() {
     if (!concept.trim()) return "Core concept is required.";
     if (!tone.trim())    return "Tone / Influences is required — name a real work.";
     if (TEST_MODE)       return null; // skip key check in test mode
-    const k = decodeKey(localStorage.getItem(LS_KEY) || "") || keyInput.trim();
+    const k = localStorage.getItem("jl-gemini-key") || decodeKey(localStorage.getItem(LS_KEY) || "") || keyInput.trim();
     if (!k)              return "Save your Gemini API key first.";
     if (!k.startsWith("AIza")) return "Invalid API key format.";
     return null;
@@ -736,7 +736,7 @@ export default function App() {
     if (running) return;
 
     const d = { t: title.trim(), g: genre, p: prot.trim(), s: setting.trim(), c: concept.trim(), tone: tone.trim() };
-    const key = decodeKey(localStorage.getItem(LS_KEY) || "") || keyInput.trim();
+    const key = localStorage.getItem("jl-gemini-key") || decodeKey(localStorage.getItem(LS_KEY) || "") || keyInput.trim();
     await warmupGemini(key);
 
     setRunning(true);
@@ -784,7 +784,7 @@ export default function App() {
   async function regenStep(idx) {
     const d = currentD;
     if (running || !d) return;
-    const key = decodeKey(localStorage.getItem(LS_KEY) || "") || keyInput.trim();
+    const key = localStorage.getItem("jl-gemini-key") || decodeKey(localStorage.getItem(LS_KEY) || "") || keyInput.trim();
     if (!TEST_MODE && !key) { setError("API key missing — tap Change to re-enter it."); return; }
 
     const callIdx = idx <= 1 ? 0 : 1;

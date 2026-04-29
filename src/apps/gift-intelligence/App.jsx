@@ -1,5 +1,7 @@
-import { useApiKey } from "../../shared/components/KeyGate";
 import { callGemini } from "../../shared/lib/gemini-client";
+import { saveResult, loadResults } from "../../shared/lib/storage";
+import { useQualityGate } from "../../shared/components/QualityGate";
+import { useApiKey } from "../../shared/components/KeyGate";
 import { useState } from "react";
 
 const STYLES = `
@@ -153,6 +155,7 @@ function GiftIntelligenceApp() {
 
   const toggleInterest = (i) => setSelectedInterests(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]);
   const canSubmit = person.trim() && occasion && budget && relationship && !loading;
+  const qg = useQualityGate("gift-intelligence");
 
   const generate = async () => {
     setLoading(true); setError(""); setResults(null);
@@ -169,6 +172,7 @@ Rules: Be hyper-specific (name actual products, brands, experiences). No generic
     try {
       const parsed = await callGemini(prompt, 1500);
       setResults(parsed.gifts || []);
+      saveResult("gift-intelligence", parsed.gifts || []);
     } catch (e) { setError(e.message || "Something went wrong. Please try again."); }
     finally { setLoading(false); }
   };
@@ -235,9 +239,27 @@ Rules: Be hyper-specific (name actual products, brands, experiences). No generic
                     </div>
                   </div>
                 </div>
-                <button className="submit-btn" onClick={generate} disabled={!canSubmit}>
-                  {canSubmit ? `Find ${giftCount} perfect gifts →` : "Fill in the details above"}
-                </button>
+                <div style={{marginTop:"1rem"}}>
+                  {canSubmit && !qg.score && (
+                    <button className="submit-btn" style={{background:"var(--sage)",marginBottom:"0.5rem"}}
+                      onClick={() => qg.analyse(`${person} ${occasion} ${budget} ${selectedInterests.join(" ")}`)}
+                      disabled={qg.loading}>
+                      {qg.loading ? "Checking input…" : "↗ Check input quality first"}
+                    </button>
+                  )}
+                  {qg.score && (
+                    <div style={{padding:"0.65rem 0.85rem",marginBottom:"0.5rem",borderRadius:"4px",fontFamily:"var(--font-mono)",fontSize:"0.65rem",lineHeight:1.6,
+                      background:qg.score==="green"?"rgba(122,140,110,0.12)":qg.score==="amber"?"rgba(201,168,76,0.12)":"rgba(196,103,74,0.12)",
+                      border:`1px solid ${qg.score==="green"?"rgba(122,140,110,0.4)":qg.score==="amber"?"rgba(201,168,76,0.4)":"rgba(196,103,74,0.4)"}`,
+                      color:qg.score==="green"?"var(--sage)":qg.score==="amber"?"var(--gold)":"var(--terracotta)"}}>
+                      {qg.score==="green"?"✓":qg.score==="amber"?"⚠":"✕"} {qg.message}
+                    </div>
+                  )}
+                  <button className="submit-btn" onClick={generate}
+                    disabled={!canSubmit || qg.isBlocked}>
+                    {qg.isBlocked ? "Fix input above first" : canSubmit ? `Find ${giftCount} perfect gifts →` : "Fill in the details above"}
+                  </button>
+                </div>
               </div>
             )}
             {loading && (
@@ -278,6 +300,24 @@ Rules: Be hyper-specific (name actual products, brands, experiences). No generic
                             📍 {gift.where}
                           </p>
                         )}
+                        <div style={{display:"flex",gap:"0.5rem",marginTop:"0.75rem",flexWrap:"wrap"}}>
+                          <a href={`https://www.amazon.in/s?k=${encodeURIComponent(gift.name)}`} target="_blank" rel="noopener noreferrer"
+                            style={{fontFamily:"var(--font-mono)",fontSize:"0.58rem",letterSpacing:"0.06em",textTransform:"uppercase",
+                            padding:"0.25rem 0.65rem",borderRadius:"2px",border:"1px solid var(--dust)",color:"var(--umber-light)",
+                            textDecoration:"none",transition:"all 0.15s",display:"inline-block"}}
+                            onMouseOver={e=>{e.target.style.borderColor="var(--terracotta)";e.target.style.color="var(--terracotta)"}}
+                            onMouseOut={e=>{e.target.style.borderColor="var(--dust)";e.target.style.color="var(--umber-light)"}}>
+                            Search Amazon.in →
+                          </a>
+                          <a href={`https://www.flipkart.com/search?q=${encodeURIComponent(gift.name)}`} target="_blank" rel="noopener noreferrer"
+                            style={{fontFamily:"var(--font-mono)",fontSize:"0.58rem",letterSpacing:"0.06em",textTransform:"uppercase",
+                            padding:"0.25rem 0.65rem",borderRadius:"2px",border:"1px solid var(--dust)",color:"var(--umber-light)",
+                            textDecoration:"none",transition:"all 0.15s",display:"inline-block"}}
+                            onMouseOver={e=>{e.target.style.borderColor="var(--terracotta)";e.target.style.color="var(--terracotta)"}}
+                            onMouseOut={e=>{e.target.style.borderColor="var(--dust)";e.target.style.color="var(--umber-light)"}}>
+                            Search Flipkart →
+                          </a>
+                        </div>
                       </div>
                     </div>
                   ))}

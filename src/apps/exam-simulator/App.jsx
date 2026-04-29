@@ -1,5 +1,6 @@
-import { useApiKey } from "../../shared/components/KeyGate";
 import { callGemini } from "../../shared/lib/gemini-client";
+import { useQualityGate } from "../../shared/components/QualityGate";
+import { useApiKey } from "../../shared/components/KeyGate";
 import { useState, useEffect, useRef, useCallback } from "react";
 
 const STYLES = `
@@ -246,6 +247,7 @@ function ExamSimulatorApp() {
 
   // ── Exam state ──
   const [phase, setPhase] = useState("setup"); // setup | loading-gen | exam | loading-score | results
+  const qg = useQualityGate("exam-simulator");
   const [questions, setQuestions] = useState([]);
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState({});

@@ -304,6 +304,17 @@ export default function Home() {
           </div>
         </nav>
 
+        {/* WELCOME BANNER — shown only when no key set */}
+        {!apiKey && (
+          <div style={{background:"#FFF8E8",borderBottom:"1px solid #FDE68A",padding:"0.75rem 2rem",display:"flex",alignItems:"center",justifyContent:"space-between",gap:"1rem",flexWrap:"wrap"}}>
+            <div style={{fontFamily:"'Fira Code',monospace",fontSize:"0.6rem",letterSpacing:"0.06em",color:"#92400E"}}>
+              <strong style={{color:"#B45309"}}>↗ Start here</strong> — Add your Gemini API key once and all 14 apps unlock instantly.
+            </div>
+            <button onClick={()=>setShowKeyModal(true)} style={{background:"#F5A623",color:"#000",border:"none",borderRadius:"6px",padding:"0.4rem 1rem",fontWeight:"700",fontSize:"0.8rem",cursor:"pointer",whiteSpace:"nowrap"}}>
+              Add your key →
+            </button>
+          </div>
+        )}
         {/* HERO */}
         <div className="hero">
           <div className="hero-eyebrow">// Janardhan Labs v2 · BYOK Edition</div>

@@ -966,27 +966,14 @@ export default function SignalPost() {
   }
 
   async function downloadPDF(item) {
-    setPdfLoading(true);
-    try {
-      const res = await fetch("/api/generate-carousel-pdf", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slides: item.carouselSlides, pillar: item.pillar, hashtags: item.hashtags }),
-      });
-      if (!res.ok) throw new Error("endpoint");
-      const blob = await res.blob();
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement("a");
-      a.href = url; a.download = `signalpost-${item.pillar}-${Date.now()}.pdf`;
-      a.click(); URL.revokeObjectURL(url);
-    } catch (e) {
-      setError(
-        e.message === "endpoint"
-          ? "PDF download requires the /api/generate-carousel-pdf Vercel function to be deployed. See generate-carousel-pdf.py."
-          : "PDF generation failed — check console for details."
-      );
-    }
-    setPdfLoading(false);
+    // PDF endpoint (generate-carousel-pdf.py) requires a Python serverless function.
+    // For now, copy the carousel script and use Canva to design slides.
+    const script = (item.carouselSlides || [])
+      .map(s => `Slide ${s.slideNum} [${s.type}]\n${s.headline}\n${s.body || ""}`)
+      .join("\n\n---\n\n");
+    navigator.clipboard.writeText(script).then(() => {
+      setError("Carousel script copied to clipboard — paste into Canva or Notion to design your slides. (PDF export coming soon)");
+    });
   }
 
   // ── canGenerate logic — enforced quality gate ──

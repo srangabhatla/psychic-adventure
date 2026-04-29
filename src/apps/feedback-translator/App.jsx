@@ -1,5 +1,6 @@
-import { useApiKey } from "../../shared/components/KeyGate";
 import { callGemini, callGeminiRaw } from "../../shared/lib/gemini-client";
+import { saveResult, loadResults } from "../../shared/lib/storage";
+import { useApiKey } from "../../shared/components/KeyGate";
 import { useState, useEffect } from "react";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
@@ -417,6 +418,7 @@ function FeedbackTranslatorApp() {
       const parsed = parseJSON(raw);
       if (!parsed || !parsed.decoded) throw new Error("Unexpected response format. Please try again.");
       setResult(parsed);
+      saveResult("feedback-translator", parsed);
       setReply(parsed[`reply_${tone}`] || parsed.reply_professional || "");
       setStep(2);
     } catch (e) {

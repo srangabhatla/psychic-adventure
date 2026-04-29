@@ -1,5 +1,5 @@
-import { useApiKey } from "../../shared/components/KeyGate";
 import { callGemini, callGeminiRaw } from "../../shared/lib/gemini-client";
+import { useApiKey } from "../../shared/components/KeyGate";
 import { useState, useEffect, useRef } from "react";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');

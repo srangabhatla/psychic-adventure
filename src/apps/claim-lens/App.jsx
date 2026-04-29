@@ -1,5 +1,6 @@
-import { useApiKey } from "../../shared/components/KeyGate";
 import { callGemini } from "../../shared/lib/gemini-client";
+import { saveResult, loadResults } from "../../shared/lib/storage";
+import { useApiKey } from "../../shared/components/KeyGate";
 import { useState, useEffect } from "react";
 
 
@@ -501,6 +502,7 @@ Rules:
         ? Math.min(100, Math.max(0, Math.round(parsed.confidenceScore)))
         : 50;
       setResult(parsed);
+      saveResult("claim-lens", parsed);
     } catch (e) {
       setError(e.message);
     } finally {

@@ -1,5 +1,7 @@
-import { useApiKey } from "../../shared/components/KeyGate";
 import { callGemini } from "../../shared/lib/gemini-client";
+import { saveResult, loadResults } from "../../shared/lib/storage";
+import { useApiKey } from "../../shared/components/KeyGate";
+import { saveResult } from "../../shared/lib/storage";
 import { useState } from "react";
 
 // ── API helper — anthropic-version + 55s timeout ──
@@ -412,6 +414,7 @@ Write 2-4 clear sentences per key at the specified reading level:
         count: requested.length,
         lensIds: requestedIds,
       });
+      saveResult("aperture", { lenses: safe, level, field });
       setOpenCards(new Set(requested.map(l => l.id)));
     } catch (e) {
       setError(e.message);

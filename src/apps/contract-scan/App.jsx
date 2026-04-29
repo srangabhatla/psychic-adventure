@@ -1,5 +1,6 @@
-import { useApiKey } from "../../shared/components/KeyGate";
 import { callGemini } from "../../shared/lib/gemini-client";
+import { saveResult, loadResults } from "../../shared/lib/storage";
+import { useApiKey } from "../../shared/components/KeyGate";
 import { useState, useRef } from "react";
 
 
@@ -430,6 +431,7 @@ Rules: risk = exactly "High","Medium","Low". summary = exactly 5 items. commitme
       parsed._wordCount = snapFile ? (snapFile.content ? snapFile.content.split(/\s+/).length : 0) : snapText.split(/\s+/).length;
       parsed._fileName  = snapFile?.name || null;
       setResult(parsed);
+      saveResult("contract-scan", parsed);
       setRiskFilter("All risks"); // FIX F2: reset risk filter on each new scan
     } catch (e) { setError(e.message); }
     finally { setLoading(false); setLoadingMsg(""); }

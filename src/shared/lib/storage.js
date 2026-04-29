@@ -1,57 +1,44 @@
 /**
  * Janardhan Labs — Storage Utility
- * Wraps window.storage for per-app result persistence.
- * Saves last MAX_RESULTS outputs per app so page refresh doesn't erase work.
+ * Uses localStorage as the primary backend (works in all deployed environments).
+ * Falls back gracefully if localStorage is unavailable.
  *
  * Usage:
- *   import { saveResult, loadResults, clearResults } from "../../shared/lib/storage";
- *   await saveResult("gift-intelligence", giftData);
- *   const past = await loadResults("gift-intelligence");  // newest first
- *   await clearResults("gift-intelligence");
+ *   import { saveResult, loadResults, clearResults, storageGet, storageSet } from "../../shared/lib/storage";
  */
 
 const MAX_RESULTS = 3;
+const PREFIX = "jl-";
 
-function key(appId) {
-  return `jl-results-${appId}`;
+function lsKey(appId) { return `${PREFIX}results-${appId}`; }
+
+function lsGet(k) {
+  try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; }
+  catch { return null; }
 }
 
-export async function saveResult(appId, data) {
-  try {
-    const existing = await loadResults(appId);
-    const updated  = [
-      { data, savedAt: new Date().toISOString() },
-      ...existing,
-    ].slice(0, MAX_RESULTS);
-    await window.storage.set(key(appId), JSON.stringify(updated));
-  } catch {}
+function lsSet(k, value) {
+  try { localStorage.setItem(k, JSON.stringify(value)); } catch {}
 }
 
-export async function loadResults(appId) {
-  try {
-    const r = await window.storage.get(key(appId));
-    return r ? JSON.parse(r.value) : [];
-  } catch { return []; }
+function lsDel(k) {
+  try { localStorage.removeItem(k); } catch {}
 }
 
-export async function clearResults(appId) {
-  try { await window.storage.delete(key(appId)); } catch {}
+export function saveResult(appId, data) {
+  const existing = loadResults(appId);
+  const updated = [{ data, savedAt: new Date().toISOString() }, ...existing].slice(0, MAX_RESULTS);
+  lsSet(lsKey(appId), updated);
 }
 
-// ── Simple key-value helpers for app-specific persistence ─────────────────
-// e.g. voice profiles, routines, session history
-
-export async function storageGet(k) {
-  try {
-    const r = await window.storage.get(k);
-    return r ? JSON.parse(r.value) : null;
-  } catch { return null; }
+export function loadResults(appId) {
+  return lsGet(lsKey(appId)) || [];
 }
 
-export async function storageSet(k, value) {
-  try { await window.storage.set(k, JSON.stringify(value)); } catch {}
+export function clearResults(appId) {
+  lsDel(lsKey(appId));
 }
 
-export async function storageDelete(k) {
-  try { await window.storage.delete(k); } catch {}
-}
+export function storageGet(k) { return lsGet(PREFIX + k); }
+export function storageSet(k, value) { lsSet(PREFIX + k, value); }
+export function storageDelete(k) { lsDel(PREFIX + k); }
