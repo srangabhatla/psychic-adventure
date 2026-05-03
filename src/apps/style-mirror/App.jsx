@@ -252,10 +252,10 @@ Return ONLY valid JSON, no markdown:
   ],
   "summary": "2-3 sentence overall characterisation of this writer's voice"
 }
-Include 5-6 trait objects. Be specific — avoid vague labels like 'clear' or 'professional'.`;
+Include 5-6 trait objects. Be specific — avoid vague labels like 'clear' or 'professional'. description: maximum 1 sentence per trait.`;
 
     try {
-      const p = await callGemini(prompt, 1500);
+      const p = await callGemini(prompt, 3000);
       const extracted = Array.isArray(p.traits)
         ? p.traits.filter(t => t.name && t.description).slice(0, 6)
         : [];
