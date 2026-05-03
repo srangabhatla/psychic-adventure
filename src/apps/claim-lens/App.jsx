@@ -495,7 +495,7 @@ Rules:
 - searchSuggestions must be exactly 3 specific queries`;
 
     try {
-      const parsed = await callGemini(prompt, 1000);
+      const parsed = await callGemini(prompt, 2500);
       if (parsed.verdict)   parsed.verdict   = String(parsed.verdict).toLowerCase().trim();
       if (parsed.claimType) parsed.claimType = String(parsed.claimType).toLowerCase().trim();
       parsed.confidenceScore = typeof parsed.confidenceScore === "number"
