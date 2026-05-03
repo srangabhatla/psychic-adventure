@@ -1,4 +1,4 @@
-import { callGemini } from "../../shared/lib/gemini-client";
+import { callGemini, setAppContext } from "../../shared/lib/gemini-client";
 import { saveResult, loadResults } from "../../shared/lib/storage";
 import { useQualityGate } from "../../shared/components/QualityGate";
 import { useApiKey } from "../../shared/components/KeyGate";
@@ -339,6 +339,7 @@ Rules: Be hyper-specific (name actual products, brands, experiences). No generic
 
 export default function GiftIntelligence() {
   const { apiKey, isKeySet, KeyGate, Banner } = useApiKey("gift-intelligence");
+  if (isKeySet) setAppContext("gift-intelligence");
   if (!isKeySet) return <KeyGate />;
   return (
     <>
