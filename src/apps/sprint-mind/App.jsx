@@ -442,7 +442,7 @@ Rules:
 - Gherkin: Given sets context, When describes user action, Then asserts outcome, And adds extra assertions`;
 
     try {
-      const parsed = await callGemini(prompt, 2500);
+      const parsed = await callGemini(prompt, 6000);
       // Normalise jira structure
       if (parsed.jira?.epics) {
         parsed.jira.epics.forEach(ep => {
