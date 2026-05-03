@@ -1,4 +1,4 @@
-import { callGemini } from "../../shared/lib/gemini-client";
+import { callGemini, setAppContext } from "../../shared/lib/gemini-client";
 import { saveResult, loadResults } from "../../shared/lib/storage";
 import { useQualityGate } from "../../shared/components/QualityGate";
 import { useApiKey } from "../../shared/components/KeyGate";
@@ -864,6 +864,7 @@ Rules:
 
 export default function SkinStack() {
   const { apiKey, isKeySet, KeyGate, Banner } = useApiKey("skinstack");
+  if (isKeySet) setAppContext("skinstack");
   if (!isKeySet) return <KeyGate />;
   return (
     <>
