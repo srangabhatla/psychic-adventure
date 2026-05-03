@@ -1,4 +1,4 @@
-import { callGemini, callGeminiRaw } from "../../shared/lib/gemini-client";
+  import { callGemini, callGeminiRaw, setAppContext } from "../../shared/lib/gemini-client";
 import { saveResult, loadResults } from "../../shared/lib/storage";
 import { useApiKey } from "../../shared/components/KeyGate";
 import { useState, useEffect } from "react";
@@ -620,6 +620,7 @@ Write only the reply text, no explanation.`;
 
 export default function FeedbackTranslator() {
   const { apiKey, isKeySet, KeyGate, Banner } = useApiKey("feedback-translator");
+  if (isKeySet) setAppContext("feedback-translator");
   if (!isKeySet) return <KeyGate />;
   return (
     <>
