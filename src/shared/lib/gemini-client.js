@@ -164,9 +164,7 @@ async function _fetch(contents, maxTokens, mimeType, appId, attempt) {
     }
 
     const data = await res.json();
-    const parts = data?.candidates?.[0]?.content?.parts || [];
-    const raw = (parts.find(p => p.text && !p.thought)?.text) || parts[0]?.text || "";
-    
+    const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
     if (!raw) {
       const reason = data?.candidates?.[0]?.finishReason || "UNKNOWN";
       if (reason === "SAFETY")     throw new Error("Blocked by safety filters — rephrase.");
@@ -242,6 +240,21 @@ function getCurrentAppId() {
 
 export function setAppContext(appId) {
   try { localStorage.setItem("jl-current-app", appId); } catch {}
+}
+
+// Force-mark the last used key as cooling so next call uses a different key
+// Use this before sequential calls to spread load across keys
+export function cycleKey(appId) {
+  const id = appId || getCurrentAppId();
+  const s = loadState(id);
+  const now = Date.now();
+  // Find the most recently used key and mark it as briefly cooling (5s)
+  let lastIdx = -1, lastTime = 0;
+  s.lastUsed.forEach((t, i) => { if (s.keys[i] && s.valid[i] && t > lastTime) { lastTime = t; lastIdx = i; } });
+  if (lastIdx >= 0) {
+    s.coolingUntil[lastIdx] = now + 5000; // 5s micro-cool — just enough to pick next key
+    saveState(id, s);
+  }
 }
 
 export async function callGemini(a, b, c) {
