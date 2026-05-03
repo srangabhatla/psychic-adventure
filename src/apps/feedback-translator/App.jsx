@@ -1,6 +1,6 @@
 import { callGemini, callGeminiRaw, setAppContext } from "../../shared/lib/gemini-client";
 import { saveResult, loadResults } from "../../shared/lib/storage";
-import { useApiKey, AppKeyGate, AppBanner } from "../../shared/components/KeyGate";
+import { useApiKey } from "../../shared/components/KeyGate";
 import { useState, useEffect } from "react";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
@@ -619,12 +619,12 @@ Write only the reply text, no explanation.`;
 }
 
 export default function FeedbackTranslator() {
-  const keyHook = useApiKey("feedback-translator");
+  const { isKeySet, KeyGate, Banner } = useApiKey("feedback-translator");
   setAppContext("feedback-translator");
-  if (!keyHook.isKeySet) return <AppKeyGate hook={keyHook} />;
+  if (!isKeySet) return <KeyGate />;
   return (
     <>
-      <AppBanner hook={keyHook} />
+      <Banner />
       <FeedbackTranslatorApp />
     </>
   );
