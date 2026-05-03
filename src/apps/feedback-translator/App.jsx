@@ -1,4 +1,4 @@
-  import { callGemini, callGeminiRaw, setAppContext } from "../../shared/lib/gemini-client";
+import { callGemini, callGeminiRaw, setAppContext } from "../../shared/lib/gemini-client";
 import { saveResult, loadResults } from "../../shared/lib/storage";
 import { useApiKey } from "../../shared/components/KeyGate";
 import { useState, useEffect } from "react";
@@ -422,7 +422,7 @@ function FeedbackTranslatorApp() {
       setReply(parsed[`reply_${tone}`] || parsed.reply_professional || "");
       setStep(2);
     } catch (e) {
-      setError(e.message);
+      if (!e.message.startsWith("__COOLDOWN__")) setError(e.message);
       setStep(0);
     } finally {
       setLoading(false);
@@ -439,7 +439,7 @@ Write only the reply text, no explanation.`;
     try {
       const text = await callGeminiRaw(tonePrompt, 800);
       if (text) setReply(text);
-    } catch (e) { setError(e.message); }
+    } catch (e) { if (!e.message.startsWith("__COOLDOWN__")) setError(e.message); }
     setRegenLoading(false);
   }
 
@@ -620,7 +620,7 @@ Write only the reply text, no explanation.`;
 
 export default function FeedbackTranslator() {
   const { apiKey, isKeySet, KeyGate, Banner } = useApiKey("feedback-translator");
-  if (isKeySet) setAppContext("feedback-translator");
+  setAppContext("feedback-translator");
   if (!isKeySet) return <KeyGate />;
   return (
     <>
