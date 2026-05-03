@@ -3,7 +3,7 @@
  * Per-app 3-key rotation. appId passed explicitly. No module-level state.
  */
 
-const MODEL    = "gemini-1.5-flash";
+const MODEL    = "gemini-2.5-flash";
 const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/" + MODEL + ":generateContent";
 const TIMEOUT  = 55000;
 const COOL_MS  = 65000;
