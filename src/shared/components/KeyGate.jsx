@@ -328,39 +328,27 @@ export function useApiKey(appId) {
     return idx >= 0 ? s.keys[idx] : null;
   })();
 
-  return {
-    apiKey,
-    isKeySet,
-    showManage,
-    cooldown,
-    appId,
-    handleKeySet,
-    handleRevoke,
-    setShowManage,
-    setCooldown,
-  };
-}
+  // Stable wrapper components — defined outside render to avoid React error #130
+  const KeyGate = () => <KeyGateScreen appId={appId} onKeySet={handleKeySet} />;
 
-export default useApiKey;
-
-// ── Standalone components used by apps ────────────────────────────────────
-export function AppKeyGate({ hook }) {
-  return <KeyGateScreen appId={hook.appId} onKeySet={hook.handleKeySet} />;
-}
-
-export function AppBanner({ hook }) {
-  return (
+  const Banner = () => (
     <>
-      <KeyBanner appId={hook.appId} onRevoke={hook.handleRevoke} onManage={() => hook.setShowManage(true)} />
-      {hook.showManage && (
+      <KeyBanner appId={appId} onRevoke={handleRevoke} onManage={() => setShowManage(true)} />
+      {showManage && (
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:"1.5rem"}}
-          onClick={() => hook.setShowManage(false)}>
+          onClick={() => setShowManage(false)}>
           <div onClick={e => e.stopPropagation()}>
-            <KeyGateScreen appId={hook.appId} onKeySet={hook.handleKeySet} />
+            <KeyGateScreen appId={appId} onKeySet={handleKeySet} />
           </div>
         </div>
       )}
-      {hook.cooldown > 0 && <CooldownOverlay appId={hook.appId} onReady={() => hook.setCooldown(0)} />}
+      {cooldown > 0 && <CooldownOverlay appId={appId} onReady={() => setCooldown(0)} />}
     </>
   );
+
+  return { apiKey, isKeySet, KeyGate, Banner };
 }
+
+export default useApiKey;
+export function AppKeyGate({ hook }) { return null; }
+export function AppBanner({ hook }) { return null; }
