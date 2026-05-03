@@ -394,7 +394,7 @@ Write 2-4 clear sentences per key at the specified reading level:
 - "next": what specific papers, authors, or topics should the reader explore next?`;
 
     try {
-      const parsed = await callGemini(prompt, 1200);
+      const parsed = await callGemini(prompt, 2500);
 
       // FIX: normalise all requested lens values to strings; fallback for missing keys
       const safe = {};
