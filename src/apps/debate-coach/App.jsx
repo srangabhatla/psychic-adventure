@@ -421,7 +421,7 @@ function DebateCoachApp() {
     setLoading(true); setError(null); setChallenge(null);
     try {
       const { system, user } = buildRoundPrompt(t, uPos, oPos, roundNum, tone, null, null);
-      const data = await callGemini(system, user, 400);
+      const data = await callGemini(system, user, 2000);
       if (!data?.challenge) throw new Error("Could not generate challenge. Try again.");
       setChallenge(data);
       setTimeout(() => battleRef.current?.scrollIntoView({ behavior:"smooth", block:"start" }), 200);
@@ -442,7 +442,7 @@ function DebateCoachApp() {
       if (isLastRound) {
         // Final round — just score
         const { system, user } = buildFinalScorePrompt(t, userPosition, challenge.challenge, rebuttal, tone);
-        const data = await callGemini(system, user, 600);
+        const data = await callGemini(system, user, 2000);
         if (!data?.score) throw new Error("Could not score rebuttal. Try again.");
         const s = data.score;
         setScoreData(s);
@@ -450,7 +450,7 @@ function DebateCoachApp() {
       } else {
         // Not last — score AND get next challenge in one call
         const { system, user } = buildRoundPrompt(t, userPosition, opponentPosition, round, tone, rebuttal, challenge.challenge);
-        const data = await callGemini(system, user, 900);
+        const data = await callGemini(system, user, 4000);
         if (!data?.score) throw new Error("Could not score rebuttal. Try again.");
         const s = data.score;
         setScoreData(s);
