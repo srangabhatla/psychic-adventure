@@ -180,7 +180,9 @@ const raw = (parts.find(p => p.text && !p.thought)?.text) || parts[0]?.text || "
   }
 }
 
-function preprocessInput(text) {
+// Only applied to user-supplied input (what the user types), never to developer prompt templates.
+// Deduplicates repeated sentences and caps at 8000 chars to handle long pastes.
+function preprocessUserInput(text) {
   if (typeof text !== "string" || text.length < 100) return text;
   let clean = text.replace(/\s+/g, " ").trim();
   const sentences = clean.split(/[.!?]+/).map(s => s.trim()).filter(Boolean);
@@ -191,7 +193,7 @@ function preprocessInput(text) {
     seen.add(key); return true;
   });
   clean = unique.join(". ");
-  if (clean.length > 3200) clean = clean.slice(0, 3200) + "...";
+  if (clean.length > 8000) clean = clean.slice(0, 8000) + "...";
   return clean;
 }
 
@@ -199,26 +201,32 @@ function normalise(v) {
   if (Array.isArray(v)) {
     return v.map(msg => {
       const role = msg.role === "assistant" ? "model" : "user";
-      if (typeof msg.content === "string") return { role, parts: [{ text: preprocessInput(msg.content) }] };
+      // String content: user-supplied chat message — preprocess it
+      if (typeof msg.content === "string") return { role, parts: [{ text: preprocessUserInput(msg.content) }] };
       if (msg.parts) return { role, parts: msg.parts };
       if (Array.isArray(msg.content)) {
         const parts = msg.content.map(b => {
-          if (b.type === "text")     return { text: preprocessInput(b.text) };
+          // Only text blocks from the user get preprocessed; images and docs pass through untouched
+          if (b.type === "text")     return { text: preprocessUserInput(b.text) };
           if (b.type === "image")    return { inlineData: { mimeType: b.source.media_type, data: b.source.data } };
           if (b.type === "document") return { inlineData: { mimeType: "application/pdf", data: b.source.data } };
           return { text: b.text || "" };
         });
         return { role, parts };
       }
-      return { role, parts: [{ text: preprocessInput(String(msg.content || "")) }] };
+      return { role, parts: [{ text: preprocessUserInput(String(msg.content || "")) }] };
     });
   }
-  return [{ role: "user", parts: [{ text: preprocessInput(String(v)) }] }];
+  // Single string passed directly — this is always a full developer prompt, send as-is
+  return [{ role: "user", parts: [{ text: String(v) }] }];
 }
 
 function resolveArgs(a, b, c) {
   if (c !== undefined) {
-    return { contents: [{ role: "user", parts: [{ text: preprocessInput(a + "\n\n" + b) }] }], maxTokens: c };
+    // 3-arg form: callGemini(systemPrompt, userInput, maxTokens)
+    // a = developer-authored system/instruction prompt — never preprocess
+    // b = user-supplied input — preprocess
+    return { contents: [{ role: "user", parts: [{ text: a + "\n\n" + preprocessUserInput(b) }] }], maxTokens: c };
   }
   return { contents: normalise(a), maxTokens: b };
 }
