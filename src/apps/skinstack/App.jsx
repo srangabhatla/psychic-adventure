@@ -27,8 +27,7 @@ async function callWithKeyIndex(keyIndex, prompt, maxTokens) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 },
-        thinkingConfig: { thinkingBudget: 0 },
+        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7, thinkingConfig: { thinkingBudget: 0 } },
       }),
     }
   );
