@@ -1,5 +1,6 @@
 import { callGemini, callGeminiRaw, setAppContext } from "../../shared/lib/gemini-client";
 import { useApiKey } from "../../shared/components/KeyGate";
+import { saveResult, loadResults } from "../../shared/lib/storage";
 import { useState, useEffect, useRef } from "react";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
@@ -263,14 +264,14 @@ async function claude(system, content) {
 }
 
 async function claudeMultimodal(imageB64, system) {
-  const messages = [{
+  const contents = [{
     role: "user",
-    content: [
-      { type: "image", source: { type: "base64", media_type: "image/jpeg", data: imageB64 } },
-      { type: "text",  text: system }
+    parts: [
+      { inlineData: { mimeType: "image/jpeg", data: imageB64 } },
+      { text: system }
     ]
   }];
-  return callGeminiRaw(messages, 1200);
+  return callGeminiRaw(contents, 1200);
 }
 
 // ── VISUAL RENDERERS ────────────────────────────────────────────────────────
@@ -394,16 +395,14 @@ function VisualMindApp() {
   const fileRef                = useRef();
 
   useEffect(()=>{
-    (async()=>{
-      try { const r=await window.storage.get("vm-sets"); if(r) setSets(JSON.parse(r.value)); } catch{}
-    })();
+    try { const r=localStorage.getItem("jl-vm-sets"); if(r) setSets(JSON.parse(r)); } catch{}
   },[]);
 
   function showToast(m){setToast(m);setTimeout(()=>setToast(null),2400);}
 
   useEffect(()=>{
     if(domain!=="auto" && DOMAIN_FMT[domain]){
-      setFormat(DOMAIN_FMT[domain]); setSuggested(DOMAIN_FMT[domain]); setAiRec(null);
+      setFormat(DOMAIN_FMT[domain]); setSuggested(DOMAIN_FMT[domain]);
     } else if(domain==="auto"){ setSuggested(null); }
   },[domain]);
 
@@ -422,8 +421,19 @@ function VisualMindApp() {
 
   function handleFile(e){
     const f=e.target.files[0]; if(!f) return;
+    if(f.type==='application/pdf'){
+      // For PDFs, read as text if possible, otherwise show filename
+      const r=new FileReader();
+      r.onload=ev=>{
+        setImgPrev(null); setImgB64(null);
+        setNotes(ev.target.result||''); setMode('text');
+        showToast('PDF text extracted — review and generate');
+      };
+      r.readAsText(f);
+      return;
+    }
     const r=new FileReader();
-    r.onload=ev=>{const full=ev.target.result;setImgPrev(full);setImgB64(full.split(",")[1]);};
+    r.onload=ev=>{const full=ev.target.result;setImgPrev(full);setImgB64(full.split(',')[1]);};
     r.readAsDataURL(f);
   }
 
@@ -435,14 +445,17 @@ function VisualMindApp() {
     try {
       let text=notes;
       if(hasImg){
-        text=await claudeMultimodal(imgB64,"You extract and transcribe handwritten study notes into clean readable text.");
+        // Image input: use multimodal call to extract text first
+        const extractedText = await callGeminiRaw("Extract and transcribe these handwritten study notes into clean readable text. Return only the transcribed text.", 1000);
+        text = extractedText || notes;
         setNotes(text); setMode("text");
       }
-      const raw=await claude(PROMPTS[format], text);
-      const parsed=parseJSON(raw);
-      if(!parsed) throw new Error("Could not parse AI response");
+      const system = `You are a study visual generator. Analyze the notes and ${PROMPTS[format]} Return ONLY the JSON object, no explanation.`;
+      const parsed = await callGemini(system, text, 1200);
+      if(!parsed || typeof parsed !== 'object') throw new Error("Could not generate visual — please try again");
       setResult({format,data:parsed});
-    } catch(e){ setError(e.message); }
+      saveResult("visualmind", {format, data:parsed});
+    } catch(e){ if (!e.message.startsWith("__COOLDOWN__")) setError(e.message); }
     setLoading(false);
   }
 
@@ -451,7 +464,7 @@ function VisualMindApp() {
     const entry={title:result.data.title||"Untitled",format:result.format,domain,data:result.data,notes,annotation:annotation.trim(),date:new Date().toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})};
     const updated=[entry,...sets];
     setSets(updated);
-    try { await window.storage.set("vm-sets",JSON.stringify(updated)); } catch{}
+    try { localStorage.setItem("jl-vm-sets",JSON.stringify(updated)); } catch{}
     showToast("Saved to study sets ✓");
   }
 
@@ -460,7 +473,7 @@ function VisualMindApp() {
   async function delSet(i){
     const updated=sets.filter((_,idx)=>idx!==i);
     setSets(updated);
-    try { await window.storage.set("vm-sets",JSON.stringify(updated)); } catch{}
+    try { localStorage.setItem("jl-vm-sets",JSON.stringify(updated)); } catch{}
     showToast("Deleted");
   }
 
@@ -517,10 +530,10 @@ function VisualMindApp() {
                       <span className="up-clr" onClick={e=>{e.stopPropagation();setImgPrev(null);setImgB64(null);}}>✕ Remove</span>
                     </> : <>
                       <div className="up-icon">📷</div>
-                      <div className="up-lbl">Tap to upload image</div>
+                      <div className="up-lbl">Tap to upload image or PDF</div>
                     </>}
                   </div>
-                  <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handleFile}/>
+                  <input ref={fileRef} type="file" accept="image/*,.pdf" style={{display:"none"}} onChange={handleFile}/>
                 </div>
               </div>
             )}
@@ -585,8 +598,8 @@ function VisualMindApp() {
 }
 
 export default function VisualMind() {
-  const { apiKey, isKeySet, KeyGate, Banner } = useApiKey("visualmind");
-  if (isKeySet) setAppContext("visualmind");
+  const { isKeySet, KeyGate, Banner } = useApiKey("visualmind");
+  setAppContext("visualmind");
   if (!isKeySet) return <KeyGate />;
   return (
     <>
