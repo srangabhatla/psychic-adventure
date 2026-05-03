@@ -173,7 +173,7 @@ Rules: Be hyper-specific (name actual products, brands, experiences). No generic
       const parsed = await callGemini(prompt, 1500);
       setResults(parsed.gifts || []);
       saveResult("gift-intelligence", parsed.gifts || []);
-    } catch (e) { setError(e.message || "Something went wrong. Please try again."); }
+    } catch (e) { if (!e.message.startsWith("__COOLDOWN__")) setError(e.message || "Something went wrong. Please try again."); }
     finally { setLoading(false); }
   };
 
@@ -338,8 +338,8 @@ Rules: Be hyper-specific (name actual products, brands, experiences). No generic
 }
 
 export default function GiftIntelligence() {
-  const { apiKey, isKeySet, KeyGate, Banner } = useApiKey("gift-intelligence");
-  if (isKeySet) setAppContext("gift-intelligence");
+  const { isKeySet, KeyGate, Banner } = useApiKey("gift-intelligence");
+  setAppContext("gift-intelligence");
   if (!isKeySet) return <KeyGate />;
   return (
     <>
