@@ -321,7 +321,7 @@ Return ONLY valid JSON, no markdown fences, no explanation. Format:
 ]}
 Rules: MCQ options must start with "A. " "B. " "C. " "D. ". correct for MCQ = single letter A/B/C/D. correct for true_false = "True" or "False". Generate all ${count} questions.`;
     try {
-      const parsed = await callGemini(prompt, 2500);
+      const parsed = await callGemini(prompt, 4000);
       if (!parsed.questions?.length) throw new Error("No questions returned — please try again");
       setQuestions(parsed.questions);
       setAnswers({}); setRevealed({}); setCurrentQ(0); setTimeLeft(null);
@@ -365,7 +365,7 @@ Return ONLY valid JSON:
 For short_answer: be generous — mark correct if the key concept is present.
 weakAreas = topics where the student got questions wrong. strongAreas = topics where all answers were correct. Both can be empty arrays.`;
     try {
-      const parsed = await callGemini(prompt, 1500);
+      const parsed = await callGemini(prompt, 2000);
       setScoredResults(parsed); setPhase("results");
     } catch (e) { setError(e.message); setPhase("exam"); }
   };
