@@ -1,4 +1,4 @@
-import { callGemini, callGeminiRaw } from "../../shared/lib/gemini-client";
+import { callGemini, callGeminiRaw, setAppContext } from "../../shared/lib/gemini-client";
 import { useApiKey } from "../../shared/components/KeyGate";
 import { useState, useEffect, useRef } from "react";
 
@@ -586,6 +586,7 @@ function VisualMindApp() {
 
 export default function VisualMind() {
   const { apiKey, isKeySet, KeyGate, Banner } = useApiKey("visualmind");
+  if (isKeySet) setAppContext("visualmind");
   if (!isKeySet) return <KeyGate />;
   return (
     <>
