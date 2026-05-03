@@ -1,4 +1,4 @@
-import { callGemini } from "../../shared/lib/gemini-client";
+import { callGemini, setAppContext } from "../../shared/lib/gemini-client";
 import { useApiKey } from "../../shared/components/KeyGate";
 import { useState } from "react";
 
@@ -598,6 +598,7 @@ Preserve the meaning and all factual content exactly. Only change the style.`;
 
 export default function StyleMirror() {
   const { apiKey, isKeySet, KeyGate, Banner } = useApiKey("style-mirror");
+  if (isKeySet) setAppContext("style-mirror");
   if (!isKeySet) return <KeyGate />;
   return (
     <>
