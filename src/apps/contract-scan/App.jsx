@@ -1,4 +1,4 @@
-import { callGemini } from "../../shared/lib/gemini-client";
+import { callGemini, setAppContext } from "../../shared/lib/gemini-client";
 import { saveResult, loadResults } from "../../shared/lib/storage";
 import { useApiKey } from "../../shared/components/KeyGate";
 import { useState, useRef } from "react";
@@ -741,6 +741,7 @@ Rules: risk = exactly "High","Medium","Low". summary = exactly 5 items. commitme
 
 export default function ContractScan() {
   const { apiKey, isKeySet, KeyGate, Banner } = useApiKey("contract-scan");
+  if (isKeySet) setAppContext("contract-scan");
   if (!isKeySet) return <KeyGate />;
   return (
     <>
