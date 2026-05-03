@@ -504,7 +504,7 @@ Rules:
       setResult(parsed);
       saveResult("claim-lens", parsed);
     } catch (e) {
-      setError(e.message);
+      if (!e.message.startsWith("__COOLDOWN__")) setError(e.message);
     } finally {
       setLoading(false);
     }
@@ -725,8 +725,8 @@ Rules:
 }
 
 export default function ClaimLens() {
-  const { apiKey, isKeySet, KeyGate, Banner } = useApiKey("claim-lens");
-  if (isKeySet) setAppContext("claim-lens");
+  const { isKeySet, KeyGate, Banner } = useApiKey("claim-lens");
+  setAppContext("claim-lens");
   if (!isKeySet) return <KeyGate />;
   return (
     <>
