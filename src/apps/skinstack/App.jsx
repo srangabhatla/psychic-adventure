@@ -28,6 +28,7 @@ async function callWithKeyIndex(keyIndex, prompt, maxTokens) {
       body: JSON.stringify({
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 },
+        thinkingConfig: { thinkingBudget: 0 },
       }),
     }
   );
@@ -281,7 +282,7 @@ Rules:
 
     let routine = null;
     try {
-      routine = await callWithKeyIndex(0, routinePrompt, 3000);
+      routine = await callWithKeyIndex(0, routinePrompt, 5000);
       routine.morningRoutine = Array.isArray(routine.morningRoutine) ? routine.morningRoutine : [];
       routine.nightRoutine   = Array.isArray(routine.nightRoutine)   ? routine.nightRoutine   : [];
     } catch (e) {
