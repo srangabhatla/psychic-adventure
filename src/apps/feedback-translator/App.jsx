@@ -414,10 +414,9 @@ function FeedbackTranslatorApp() {
       : `Feedback: ${feedback.trim()}`;
 
     try {
-      const raw = await callGemini(userMsg, 2000);
-      const parsed = parseJSON(raw);
-      if (!parsed || !parsed.decoded) throw new Error("Unexpected response format. Please try again.");
-      setResult(parsed);
+         const parsed = await callGemini(SYSTEM_ALL, userMsg, 2000);
+        if (!parsed || !parsed.decoded) throw new Error("Unexpected response format. Please try again.");
+        setResult(parsed);
       saveResult("feedback-translator", parsed);
       setReply(parsed[`reply_${tone}`] || parsed.reply_professional || "");
       setStep(2);
