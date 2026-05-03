@@ -1,4 +1,4 @@
-import { callGemini } from "../../shared/lib/gemini-client";
+import { callGemini, setAppContext } from "../../shared/lib/gemini-client";
 import { useApiKey } from "../../shared/components/KeyGate";
 import { useState, useRef } from "react";
 
@@ -755,6 +755,7 @@ function DebateCoachApp() {
 
 export default function DebateCoach() {
   const { apiKey, isKeySet, KeyGate, Banner } = useApiKey("debate-coach");
+  if (isKeySet) setAppContext("debate-coach");
   if (!isKeySet) return <KeyGate />;
   return (
     <>
