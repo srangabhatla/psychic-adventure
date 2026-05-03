@@ -1,4 +1,4 @@
-import { callGemini, setAppContext } from "../../shared/lib/gemini-client";
+import { callGemini, setAppContext, cycleKey } from "../../shared/lib/gemini-client";
 import { useApiKey } from "../../shared/components/KeyGate";
 import { useState, useRef } from "react";
 
@@ -388,13 +388,12 @@ function DebateCoachApp() {
     setLoading(true); setError(null);
     try {
       const { system, user } = buildSidesPrompt(topic.trim(), domain, tone);
-      const raw  = await callGemini(system, user, 900);
-      const data = parseJSON(raw);
+      const data = await callGemini(system, user, 900);
       if (!data?.for?.arguments || !data?.against?.arguments)
         throw new Error("Could not parse arguments. Please try again.");
       setSides(data);
       setScreen("sides");
-    } catch(e) { setError(e.message); }
+    } catch(e) { if (!e.message.startsWith("__COOLDOWN__")) setError(e.message); }
     setLoading(false);
   }
 
@@ -422,12 +421,11 @@ function DebateCoachApp() {
     setLoading(true); setError(null); setChallenge(null);
     try {
       const { system, user } = buildRoundPrompt(t, uPos, oPos, roundNum, tone, null, null);
-      const raw  = await callGemini(system, user, 400);
-      const data = parseJSON(raw);
+      const data = await callGemini(system, user, 400);
       if (!data?.challenge) throw new Error("Could not generate challenge. Try again.");
       setChallenge(data);
       setTimeout(() => battleRef.current?.scrollIntoView({ behavior:"smooth", block:"start" }), 200);
-    } catch(e) { setError(e.message); }
+    } catch(e) { if (!e.message.startsWith("__COOLDOWN__")) setError(e.message); }
     setLoading(false);
   }
 
@@ -444,8 +442,7 @@ function DebateCoachApp() {
       if (isLastRound) {
         // Final round — just score
         const { system, user } = buildFinalScorePrompt(t, userPosition, challenge.challenge, rebuttal, tone);
-        const raw  = await callGemini(system, user, 600);
-        const data = parseJSON(raw);
+        const data = await callGemini(system, user, 600);
         if (!data?.score) throw new Error("Could not score rebuttal. Try again.");
         const s = data.score;
         setScoreData(s);
@@ -453,8 +450,7 @@ function DebateCoachApp() {
       } else {
         // Not last — score AND get next challenge in one call
         const { system, user } = buildRoundPrompt(t, userPosition, opponentPosition, round, tone, rebuttal, challenge.challenge);
-        const raw  = await callGemini(system, user, 900);
-        const data = parseJSON(raw);
+        const data = await callGemini(system, user, 900);
         if (!data?.score) throw new Error("Could not score rebuttal. Try again.");
         const s = data.score;
         setScoreData(s);
@@ -462,7 +458,7 @@ function DebateCoachApp() {
         // Cache next challenge
         if (data.next_challenge) setPendingNext(data.next_challenge);
       }
-    } catch(e) { setError(e.message); }
+    } catch(e) { if (!e.message.startsWith("__COOLDOWN__")) setError(e.message); }
     setLoading(false);
   }
 
@@ -754,8 +750,8 @@ function DebateCoachApp() {
 }
 
 export default function DebateCoach() {
-  const { apiKey, isKeySet, KeyGate, Banner } = useApiKey("debate-coach");
-  if (isKeySet) setAppContext("debate-coach");
+  const { isKeySet, KeyGate, Banner } = useApiKey("debate-coach");
+  setAppContext("debate-coach");
   if (!isKeySet) return <KeyGate />;
   return (
     <>
