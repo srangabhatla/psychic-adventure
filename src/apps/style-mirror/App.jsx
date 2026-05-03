@@ -255,7 +255,7 @@ Return ONLY valid JSON, no markdown:
 Include 5-6 trait objects. Be specific — avoid vague labels like 'clear' or 'professional'.`;
 
     try {
-      const p = await callGemini(prompt, 800);
+      const p = await callGemini(prompt, 1500);
       const extracted = Array.isArray(p.traits)
         ? p.traits.filter(t => t.name && t.description).slice(0, 6)
         : [];
@@ -308,7 +308,7 @@ Return ONLY valid JSON, no markdown:
 Preserve the meaning and all factual content exactly. Only change the style.`;
 
     try {
-      const p = await callGemini(prompt, 1000);
+      const p = await callGemini(prompt, 2000);
       const rewritten = typeof p.rewritten === "string" ? p.rewritten.trim() : "";
       if (!rewritten) throw new Error("No rewrite returned — please try again");
       setRewrite({
