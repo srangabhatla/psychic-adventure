@@ -1,4 +1,4 @@
-import { callGemini } from "../../shared/lib/gemini-client";
+import { callGemini, setAppContext } from "../../shared/lib/gemini-client";
 import { saveResult, loadResults } from "../../shared/lib/storage";
 import { useApiKey } from "../../shared/components/KeyGate";
 import { useState } from "react";
@@ -613,6 +613,7 @@ Write 2-4 clear sentences per key at the specified reading level:
 
 export default function Aperture() {
   const { apiKey, isKeySet, KeyGate, Banner } = useApiKey("aperture");
+  if (isKeySet) setAppContext("aperture");
   if (!isKeySet) return <KeyGate />;
   return (
     <>
