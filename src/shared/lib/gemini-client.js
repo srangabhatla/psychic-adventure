@@ -21,8 +21,7 @@ function loadState(appId) {
     if (raw) return JSON.parse(raw);
   } catch {}
   // Default: pull global key into slot 0
-  const gk = localStorage.getItem(GLOBAL_KEY) || "";
-  return { keys: [gk, "", ""], lastUsed: [0, 0, 0], coolingUntil: [0, 0, 0], valid: [!!gk, false, false] };
+  return { keys: ["", "", ""], lastUsed: [0, 0, 0], coolingUntil: [0, 0, 0], valid: [false, false, false] };
 }
 
 function saveState(appId, state) {
