@@ -1,4 +1,4 @@
-import { callGemini } from "../../shared/lib/gemini-client";
+import { callGemini, setAppContext } from "../../shared/lib/gemini-client";
 import { saveResult, loadResults } from "../../shared/lib/storage";
 import { useApiKey } from "../../shared/components/KeyGate";
 import { useState, useEffect } from "react";
@@ -726,6 +726,7 @@ Rules:
 
 export default function ClaimLens() {
   const { apiKey, isKeySet, KeyGate, Banner } = useApiKey("claim-lens");
+  if (isKeySet) setAppContext("claim-lens");
   if (!isKeySet) return <KeyGate />;
   return (
     <>
