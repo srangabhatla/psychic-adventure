@@ -495,7 +495,7 @@ Rules:
       parsed._hasQ        = !!snapQ;
       setResult(parsed);
       saveResult("skinstack", parsed);
-    } catch (e) { setError(e.message); }
+    } catch (e) { if (!e.message.startsWith("__COOLDOWN__")) setError(e.message); }
     finally { setLoading(false); }
   };
 
@@ -863,8 +863,8 @@ Rules:
 }
 
 export default function SkinStack() {
-  const { apiKey, isKeySet, KeyGate, Banner } = useApiKey("skinstack");
-  if (isKeySet) setAppContext("skinstack");
+  const { isKeySet, KeyGate, Banner } = useApiKey("skinstack");
+  setAppContext("skinstack");
   if (!isKeySet) return <KeyGate />;
   return (
     <>
