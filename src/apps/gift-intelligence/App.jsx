@@ -168,9 +168,10 @@ Known interests: ${selectedInterests.length ? selectedInterests.join(", ") : "No
 Wildcard / extra context: ${wildcard || "None"}
 Return ONLY valid JSON, no explanation, no markdown. Format:
 {"gifts":[{"emoji":"🎁","name":"Specific product or experience name","price":"Approx India price","why_tag":"3-5 words why this fits","reasoning":"2-3 sentence explanation personalised to them","where":"Where to find it in India (e.g. Amazon.in, local store, Nykaa, Etsy India)"}]}
-Rules: Be hyper-specific (name actual products, brands, experiences). No generic gifts like "a book". Tailor deeply to the person described. Vary gift types across the list.`;
+Rules: Be hyper-specific (name actual products, brands, experiences). No generic gifts like "a book". Tailor deeply to the person described. Vary gift types across the list. reasoning: maximum 2 concise sentences.`;
+    const maxTokens = 500 * giftCount + 500;
     try {
-      const parsed = await callGemini(prompt, 1500);
+      const parsed = await callGemini(prompt, maxTokens);
       setResults(parsed.gifts || []);
       saveResult("gift-intelligence", parsed.gifts || []);
     } catch (e) { if (!e.message.startsWith("__COOLDOWN__")) setError(e.message || "Something went wrong. Please try again."); }
