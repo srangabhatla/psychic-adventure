@@ -164,7 +164,8 @@ async function _fetch(contents, maxTokens, mimeType, appId, attempt) {
     }
 
     const data = await res.json();
-    const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const parts = data?.candidates?.[0]?.content?.parts || [];
+const raw = (parts.find(p => p.text && !p.thought)?.text) || parts[0]?.text || "";
     if (!raw) {
       const reason = data?.candidates?.[0]?.finishReason || "UNKNOWN";
       if (reason === "SAFETY")     throw new Error("Blocked by safety filters — rephrase.");
