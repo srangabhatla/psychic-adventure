@@ -417,7 +417,7 @@ Rules: risk = exactly "High","Medium","Low". summary = exactly 5 items. commitme
 
     try {
       const messages = buildMessages(snapText, snapFile, snapType, snapRole, snapJuri);
-      const parsed = await callGemini(messages, 2000);
+      const parsed = await callGemini(messages, 4000);
       // Normalise all arrays
       parsed.summary     = Array.isArray(parsed.summary)     ? parsed.summary     : [];
       parsed.riskFlags   = Array.isArray(parsed.riskFlags)   ? parsed.riskFlags.map(f => ({ ...f, risk: ["High","Medium","Low"].includes(f.risk) ? f.risk : "Low" })) : [];
