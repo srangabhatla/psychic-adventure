@@ -238,6 +238,7 @@ function parseJSON(raw) {
     const arr = clean.match(/\[[\s\S]*\]/);
     const m = (obj && arr) ? (clean.indexOf("{") < clean.indexOf("[") ? obj : arr) : (obj||arr);
     if (m) { try { return JSON.parse(m[0]); } catch {} }
+    console.error("[gemini-client] parseJSON failed. Raw response was:\n", raw);
     throw new Error("Could not parse response — try again.");
   }
 }
@@ -282,7 +283,7 @@ export async function callGeminiRaw(a, b, c) {
 export async function callGeminiWithQuality(qualityContext, userInput, generatePrompt, maxTokens) {
   const appId = getCurrentAppId();
   const bundled = "STEP 1 — INPUT QUALITY CHECK\nContext: " + qualityContext + "\nInput: \"" + userInput + "\"\n\nIf too vague respond ONLY: {\"__quality\":\"red\",\"message\":\"[what is missing]\"}\n\nSTEP 2 — GENERATE\n" + generatePrompt;
-  const contents = [{ role: "user", parts: [{ text: preprocessInput(bundled) }] }];
+  const contents = [{ role: "user", parts: [{ text: preprocessUserInput(bundled) }] }];
   const raw = await _fetch(contents, maxTokens, "application/json", appId);
   return parseJSON(raw);
 }
