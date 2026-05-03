@@ -416,7 +416,7 @@ Write 2-4 clear sentences per key at the specified reading level:
       saveResult("aperture", { lenses: safe, level, field });
       setOpenCards(new Set(requested.map(l => l.id)));
     } catch (e) {
-      setError(e.message);
+      if (!e.message.startsWith("__COOLDOWN__")) setError(e.message);
     } finally {
       setLoading(false);
     }
@@ -612,8 +612,8 @@ Write 2-4 clear sentences per key at the specified reading level:
 }
 
 export default function Aperture() {
-  const { apiKey, isKeySet, KeyGate, Banner } = useApiKey("aperture");
-  if (isKeySet) setAppContext("aperture");
+  const { isKeySet, KeyGate, Banner } = useApiKey("aperture");
+  setAppContext("aperture");
   if (!isKeySet) return <KeyGate />;
   return (
     <>
