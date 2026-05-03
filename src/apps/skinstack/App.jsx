@@ -470,6 +470,7 @@ Return ONLY valid JSON, no markdown:
 Rules:
 - morningRoutine: ${snapComplexity === "Minimal (2–3 steps)" ? "2-3 steps" : snapComplexity === "Standard (4–6 steps)" ? "4-6 steps" : "6-8 steps"}
 - nightRoutine: same step count as morning, different products
+- why: maximum 1 sentence per step — be concise
 - conflicts: ONLY include if currentProducts were provided AND there are genuine conflicts. Empty array [] if no conflicts or no products given.
 - ingredients: ONLY include if currentProducts were provided. Extract top 4-5 active ingredients from those products. Empty array [] if no products given.
 - brand: if showBrands=NO set brand to null for every step. If showBrands=YES set brand to a real specific product name + size/variant available in India
@@ -480,7 +481,7 @@ Rules:
 - Respect all restrictions: ${snapRestrictions.length ? snapRestrictions.join(", ") : "none"}`;
 
     try {
-      const parsed = await callGemini(prompt, 4000);
+      const parsed = await callGemini(prompt, 6000);
       // Normalise all arrays
       parsed.morningRoutine = Array.isArray(parsed.morningRoutine) ? parsed.morningRoutine : [];
       parsed.nightRoutine   = Array.isArray(parsed.nightRoutine)   ? parsed.nightRoutine   : [];
