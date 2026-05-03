@@ -480,7 +480,7 @@ Rules:
 - Respect all restrictions: ${snapRestrictions.length ? snapRestrictions.join(", ") : "none"}`;
 
     try {
-      const parsed = await callGemini(prompt, 2500);
+      const parsed = await callGemini(prompt, 4000);
       // Normalise all arrays
       parsed.morningRoutine = Array.isArray(parsed.morningRoutine) ? parsed.morningRoutine : [];
       parsed.nightRoutine   = Array.isArray(parsed.nightRoutine)   ? parsed.nightRoutine   : [];
