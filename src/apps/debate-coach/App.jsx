@@ -388,7 +388,7 @@ function DebateCoachApp() {
     setLoading(true); setError(null);
     try {
       const { system, user } = buildSidesPrompt(topic.trim(), domain, tone);
-      const data = await callGemini(system, user, 900);
+      const data = await callGemini(system, user, 6000);
       if (!data?.for?.arguments || !data?.against?.arguments)
         throw new Error("Could not parse arguments. Please try again.");
       setSides(data);
