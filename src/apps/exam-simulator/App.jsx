@@ -1,4 +1,4 @@
-import { callGemini } from "../../shared/lib/gemini-client";
+import { callGemini, setAppContext } from "../../shared/lib/gemini-client";
 import { useQualityGate } from "../../shared/components/QualityGate";
 import { useApiKey } from "../../shared/components/KeyGate";
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -713,6 +713,7 @@ weakAreas = topics where the student got questions wrong. strongAreas = topics w
 
 export default function ExamSimulator() {
   const { apiKey, isKeySet, KeyGate, Banner } = useApiKey("exam-simulator");
+  if (isKeySet) setAppContext("exam-simulator");
   if (!isKeySet) return <KeyGate />;
   return (
     <>
